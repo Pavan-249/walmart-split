@@ -11,7 +11,8 @@ export function CheckBanner({ invoice, onFix }: { invoice: Invoice; onFix?: () =
       <p className="flex items-baseline gap-2 rounded-xl border border-line bg-surface px-4 py-3 text-sm">
         <span aria-hidden className="inline-block size-2 shrink-0 rounded-full bg-ok" />
         <span>
-          Everything adds up: {invoice.items.length} items come to <span className="num">{fmt(r.itemsSum)}</span>, and with fees and
+          Everything adds up: {invoice.items.length === 1 ? "1 item comes" : `${invoice.items.length} items come`} to{" "}
+          <span className="num">{fmt(r.itemsSum)}</span>, and with fees and
           tax that&apos;s <span className="num">{fmt(invoice.total)}</span>, same as the invoice.
         </span>
       </p>
