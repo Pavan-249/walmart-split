@@ -1,0 +1,432 @@
+<title>Walmart Split</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=IBM+Plex+Mono:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky three-person tally up top, receipt items grouped by aisle, settle-up card at the end */
+:root{
+  --bg:#f3f5f3; --surface:#ffffff; --sunk:#e9ece9; --ink:#17201b; --muted:#5b6560; --line:#d9dfdb;
+  --n:#0d7a70; --p:#b05a00; --s:#6a47c2; --on-c:#ffffff; --warn:#b42318;
+  --f-display:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101412; --surface:#181d1a; --sunk:#131714; --ink:#e6ebe8; --muted:#96a09b; --line:#29302c;
+    --n:#4fc4b7; --p:#f2a24a; --s:#a98ff2; --on-c:#0e1210; --warn:#f6776c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101412; --surface:#181d1a; --sunk:#131714; --ink:#e6ebe8; --muted:#96a09b; --line:#29302c;
+  --n:#4fc4b7; --p:#f2a24a; --s:#a98ff2; --on-c:#0e1210; --warn:#f6776c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink); font:15px/1.45 var(--f-body);
+  padding-block:20px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg)}
+.wrap{max-width:880px; margin:0 auto; display:flex; flex-direction:column; gap:22px}
+.num{font-family:var(--f-num); font-variant-numeric:tabular-nums}
+.warn{color:var(--warn)}
+[data-p="n"]{--c:var(--n)} [data-p="p"]{--c:var(--p)} [data-p="s"]{--c:var(--s)}
+
+header h1{font-family:var(--f-display); font-weight:700; font-size:clamp(28px,5vw,36px); line-height:1.05; letter-spacing:-0.015em; margin:0; text-wrap:balance}
+header .meta{margin:6px 0 0; color:var(--muted); font-size:14px}
+header .hint{margin:10px 0 0; font-size:14px; max-width:60ch}
+
+/* Tally */
+.tally{position:sticky; top:env(safe-area-inset-top, 0px); z-index:5; background:var(--bg); padding-block:8px 10px; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:8px}
+.tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; min-width:0}
+.tile .who{display:flex; align-items:center; gap:6px; font-weight:600; font-size:13.5px; color:var(--c)}
+.tile .who::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--c); flex:none}
+.tile .tot{font-family:var(--f-num); font-variant-numeric:tabular-nums; font-weight:600; font-size:clamp(18px,4.6vw,24px); margin-top:2px; letter-spacing:-0.02em}
+.tile .cnt{font-size:12px; color:var(--muted)}
+.status{display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:13px; color:var(--muted); flex-wrap:wrap}
+.status .ok{color:var(--ink); font-weight:500}
+.status .ok::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--n); margin-right:7px; vertical-align:1px}
+
+/* Groups and rows */
+.group h2{display:flex; justify-content:space-between; align-items:baseline; margin:0 0 8px; padding-inline:2px; font:600 12px/1.2 var(--f-body); text-transform:uppercase; letter-spacing:0.08em; color:var(--muted)}
+.group h2 .num{font-weight:500; letter-spacing:0; text-transform:none}
+.list{background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden}
+.row{display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"name price" "ctrl ctrl"; column-gap:12px; row-gap:10px; padding:12px 14px; border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.un{background:color-mix(in srgb, var(--warn) 7%, var(--surface))}
+.name{grid-area:name; min-width:0}
+.name .t{font-weight:600; line-height:1.3}
+.name .m{font-size:12.5px; color:var(--muted); margin-top:1px}
+.name .q{font-family:var(--f-num); font-size:12px; color:var(--ink); background:var(--sunk); border-radius:5px; padding:1px 5px; margin-left:6px; vertical-align:1px}
+.price{grid-area:price; text-align:right; white-space:nowrap}
+.price .a{font-family:var(--f-num); font-variant-numeric:tabular-nums; font-weight:600}
+.price .e{font-size:12px; color:var(--muted); margin-top:1px}
+.ctrl{grid-area:ctrl; display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+@media (min-width:720px){
+  .row{grid-template-columns:minmax(0,1fr) auto 7.5rem; grid-template-areas:"name ctrl price"; align-items:center}
+  .ctrl{justify-content:flex-end}
+}
+
+button{font:inherit; color:inherit}
+button:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+.chip{appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:6px 13px 6px 10px; border-radius:999px; border:1.5px solid var(--line); background:transparent; color:var(--muted); font:500 13.5px/1 var(--f-body); transition:background .12s, color .12s, border-color .12s}
+.chip::before{content:""; width:9px; height:9px; border-radius:50%; border:1.5px solid var(--c); box-sizing:border-box}
+.chip:hover{border-color:var(--c)}
+.chip[aria-pressed="true"]{background:var(--c); border-color:var(--c); color:var(--on-c)}
+.chip[aria-pressed="true"]::before{background:var(--on-c); border-color:var(--on-c)}
+.modebtn{appearance:none; cursor:pointer; background:none; border:0; padding:6px 4px; color:var(--muted); font:500 12.5px/1 var(--f-body); text-decoration:underline; text-underline-offset:3px}
+.modebtn:hover{color:var(--ink)}
+.step{display:inline-flex; align-items:center; height:34px; border:1.5px solid color-mix(in srgb, var(--c) 50%, var(--line)); border-radius:999px; padding-left:5px}
+.step .w{width:20px; height:20px; border-radius:50%; background:var(--c); color:var(--on-c); font:600 11px/20px var(--f-body); text-align:center; flex:none}
+.step button{appearance:none; cursor:pointer; width:30px; height:100%; border:0; background:none; border-radius:999px; font:600 17px/1 var(--f-num)}
+.step button:disabled{opacity:.28; cursor:default}
+.step .c{min-width:1.5em; text-align:center; font-family:var(--f-num); font-weight:600}
+.used{font:500 12px/1 var(--f-num); color:var(--muted); padding-inline:2px}
+.used.warn{color:var(--warn)}
+
+/* Cards */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px}
+.card h2{margin:0; font-family:var(--f-display); font-weight:700; font-size:20px; letter-spacing:-0.01em}
+.lines{display:grid; grid-template-columns:minmax(0,1fr) auto; row-gap:6px; column-gap:12px; font-size:14px}
+.lines .num{text-align:right}
+.lines .tot{font-weight:600; border-top:1px solid var(--line); padding-top:8px}
+.muted{color:var(--muted)}
+.seg{display:inline-flex; background:var(--sunk); border-radius:10px; padding:3px; gap:3px; align-self:flex-start; flex-wrap:wrap}
+.seg button{appearance:none; cursor:pointer; border:0; background:none; border-radius:8px; padding:8px 12px; font:500 13.5px/1 var(--f-body); color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px color-mix(in srgb, var(--ink) 18%, transparent)}
+.small{font-size:13px; color:var(--muted); margin:0; max-width:62ch}
+
+.owe{display:flex; flex-direction:column; gap:8px}
+.owe .l{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 12px; border-radius:10px; background:var(--sunk)}
+.owe .l b{color:var(--c)}
+.owe .l .num{font-weight:600; font-size:18px}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{appearance:none; cursor:pointer; border-radius:10px; padding:11px 16px; font:600 14px/1 var(--f-body); border:1.5px solid var(--ink); background:var(--ink); color:var(--bg)}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.ghost.armed{border-color:var(--warn); color:var(--warn)}
+#copyFallback{width:100%; min-height:150px; font:13px/1.4 var(--f-num); background:var(--sunk); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:10px}
+
+details{border-top:1px solid var(--line)}
+details:first-of-type{border-top:0}
+summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; padding:10px 2px; font-weight:600}
+summary::-webkit-details-marker{display:none}
+summary::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--c); flex:none}
+summary .num{margin-left:auto; font-weight:600}
+summary::after{content:"+"; font-family:var(--f-num); color:var(--muted); width:1em; text-align:center}
+details[open] summary::after{content:"−"}
+.bd{list-style:none; margin:0 0 12px; padding:0 2px; display:grid; grid-template-columns:minmax(0,1fr) auto; row-gap:4px; column-gap:12px; font-size:13.5px}
+.bd .num{text-align:right}
+.bd .x{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){ .chip{transition:none} }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Walmart split</h1>
+    <p class="meta">Nov 2 order <span class="num">#1234567-89012345</span> · <span class="num">$142.07</span> · paid by Pavan</p>
+    <p class="hint">Tap names to set who shares each item. Everything starts split three ways, and the chicken breasts are already on Pavan.</p>
+  </header>
+
+  <div class="tally" aria-live="polite">
+    <div class="tiles" id="tiles"></div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div id="groups" style="display:flex;flex-direction:column;gap:22px"></div>
+
+  <section class="card">
+    <h2>Fees and tax</h2>
+    <div class="lines">
+      <span>Items</span><span class="num" id="subLine"></span>
+      <span>Savings</span><span class="num">−$0.63</span>
+      <span>Bag fee</span><span class="num">$1.28</span>
+      <span>Taxes</span><span class="num">$1.03</span>
+      <span class="muted">Delivery (waived)</span><span class="num muted">$0.00</span>
+      <span class="tot">Total</span><span class="num tot">$142.07</span>
+    </div>
+    <div class="seg" role="group" aria-label="How to split the $1.68 in fees and tax">
+      <button type="button" id="exProp" data-ex="prop">By what you bought</button>
+      <button type="button" id="exEq" data-ex="equal">Equal thirds</button>
+    </div>
+    <p class="small" id="exNote"></p>
+  </section>
+
+  <section class="card">
+    <h2>Settle up</h2>
+    <div class="owe" id="owe"></div>
+    <div class="actions">
+      <button type="button" class="btn" id="copyBtn">Copy summary</button>
+      <button type="button" class="btn ghost" id="resetBtn">Reset to all shared</button>
+    </div>
+    <textarea id="copyFallback" readonly hidden aria-label="Summary text to copy"></textarea>
+  </section>
+
+  <section class="card" id="breakdown">
+    <h2>Who got what</h2>
+    <div id="bdWrap"></div>
+  </section>
+</div>
+
+<script>
+const PEOPLE=[{id:'n',name:'Nithish'},{id:'p',name:'Pavan'},{id:'s',name:'Sai'}];
+const PAYER='p';
+const CATS=[['meat','Meat'],['produce','Produce'],['dairy','Dairy & eggs'],['frozen','Frozen'],['bakery','Bread & breakfast'],['pantry','Pantry & spices'],['household','Household']];
+const ITEMS=[
+ {id:'thighs',cat:'meat',name:'Organic chicken thighs',m:'Roxy · 1–2.2 lb tray · substituted',qty:1,price:797},
+ {id:'breast',cat:'meat',name:'Chicken breasts',m:'Freshness Guaranteed · 3–7.3 lb tray',qty:1,price:1357},
+ {id:'turkey',cat:'meat',name:'Ground turkey',m:'Festive · 1 lb roll, frozen',qty:3,price:594},
+ {id:'cilantro',cat:'produce',name:'Cilantro',m:'Fresh bunch',qty:1,price:97},
+ {id:'potatoes',cat:'produce',name:'Yellow potatoes',m:'3 lb bag',qty:1,price:264},
+ {id:'chiles',cat:'produce',name:'Thai chile peppers',m:'4 oz',qty:1,price:298},
+ {id:'tomato',cat:'produce',name:'Slicing tomatoes',m:'3 pack',qty:1,price:197},
+ {id:'apples',cat:'produce',name:'Gala apples',m:'3 lb bag',qty:2,price:476},
+ {id:'oranges',cat:'produce',name:'Navel oranges',m:'Each',qty:4,price:392},
+ {id:'bananas',cat:'produce',name:'Bananas',m:'Each · weight adjusted',qty:22,price:214},
+ {id:'orgbananas',cat:'produce',name:'Organic bananas',m:'Marketside bunch · weight adjusted',qty:1,price:164},
+ {id:'eggs',cat:'dairy',name:'Cage-free large eggs',m:'Great Value · 36 count',qty:1,price:492},
+ {id:'cottage',cat:'dairy',name:'Cottage cheese',m:'Great Value · 24 oz, small curd 4%',qty:1,price:297},
+ {id:'yogurt',cat:'dairy',name:'Greek yogurt, plain nonfat',m:'Great Value · 32 oz tub',qty:6,price:1968},
+ {id:'okra',cat:'frozen',name:'Cut okra',m:'Great Value · 12 oz',qty:1,price:172},
+ {id:'corn',cat:'frozen',name:'Whole kernel corn',m:'Great Value · 12 oz steamable',qty:2,price:196},
+ {id:'slicedbanana',cat:'frozen',name:'Sliced bananas',m:'Great Value · 16 oz',qty:1,price:247},
+ {id:'vegmix',cat:'frozen',name:'California vegetable mix',m:'Great Value · 12 oz',qty:6,price:696},
+ {id:'bagels',cat:'bakery',name:'Everything bagels',m:'Franz · 6 count',qty:2,price:596},
+ {id:'bread',cat:'bakery',name:'Whole wheat bread',m:'Great Value · 20 oz',qty:1,price:202},
+ {id:'cornflakes',cat:'bakery',name:'Corn flakes',m:'Great Value · 18 oz',qty:1,price:228},
+ {id:'pancake',cat:'bakery',name:'Buttermilk pancake mix',m:'Great Value · 32 oz',qty:1,price:208},
+ {id:'wrappers',cat:'pantry',name:'Spring roll wrappers',m:'Blue Dragon · 4.7 oz',qty:1,price:297},
+ {id:'garlicpowder',cat:'pantry',name:'Garlic powder',m:'Great Value · 3.4 oz',qty:1,price:100},
+ {id:'ginger',cat:'pantry',name:'Ground ginger',m:'Great Value · 1.5 oz',qty:1,price:232},
+ {id:'gochujang',cat:'pantry',name:'Gochujang sauce',m:'Bibigo · 12.16 oz',qty:1,price:413},
+ {id:'burger',cat:'pantry',name:'Hamburger seasoning',m:'Grill Mates · 2.75 oz',qty:1,price:197},
+ {id:'driedcilantro',cat:'pantry',name:'Dried cilantro leaves',m:'Great Value · 0.5 oz',qty:1,price:212},
+ {id:'salsa',cat:'pantry',name:'Black bean & corn salsa',m:'Great Value · 16 oz, mild',qty:3,price:804},
+ {id:'spray',cat:'pantry',name:'Cooking spray',m:'Great Value · 8 oz',qty:1,price:257},
+ {id:'ggpaste',cat:'pantry',name:'Ginger garlic paste',m:'Shan · 310 g',qty:1,price:392},
+ {id:'bodywash',cat:'household',name:'Body wash',m:'Ivory · 35 fl oz, lavender',qty:1,price:697},
+ {id:'swabs',cat:'household',name:'Cotton swabs',m:'Equate · 300 count',qty:1,price:98},
+ {id:'tp',cat:'household',name:'Toilet paper',m:'4 rolls, 2-ply',qty:2,price:188}
+];
+const BYID=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const NAME=Object.fromEntries(PEOPLE.map(p=>[p.id,p.name]));
+const IDS=PEOPLE.map(p=>p.id);
+const TOTAL=14207, EXTRAS=-63+128+103;
+const SUBTOTAL=ITEMS.reduce((a,i)=>a+i.price,0);
+const KEY='walmart-split-1234567-89012345';
+
+function defaults(){
+  const a={};
+  for(const it of ITEMS) a[it.id]={mode:'even',who:it.id==='breast'?['p']:IDS.slice(),counts:null};
+  return {assign:a,extras:'prop'};
+}
+function load(){
+  const d=defaults();
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(s&&s.assign){
+      for(const id in d.assign){
+        const v=s.assign[id];
+        if(v&&(v.mode==='even'||v.mode==='count')){
+          d.assign[id]={mode:v.mode,who:Array.isArray(v.who)?IDS.filter(x=>v.who.includes(x)):[],counts:v.counts&&typeof v.counts==='object'?{n:+v.counts.n||0,p:+v.counts.p||0,s:+v.counts.s||0}:null};
+          if(d.assign[id].mode==='count'&&!d.assign[id].counts) d.assign[id].mode='even';
+        }
+      }
+      if(s.extras==='equal') d.extras='equal';
+    }
+  }catch(e){}
+  return d;
+}
+let state=load();
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+
+const fmt=c=>{ const r=Math.round(c); return (r<0?'−$':'$')+(Math.abs(r)/100).toFixed(2); };
+
+function shares(it){
+  const a=state.assign[it.id], out={n:0,p:0,s:0}; let un=0;
+  if(a.mode==='count'){
+    const unit=it.price/it.qty; let used=0;
+    for(const id of IDS){ const c=a.counts[id]||0; out[id]=c*unit; used+=c; }
+    un=(it.qty-used)*unit;
+  }else if(a.who.length===0){ un=it.price; }
+  else{ for(const id of a.who) out[id]=it.price/a.who.length; }
+  return {out,un};
+}
+
+function totals(){
+  const sub={n:0,p:0,s:0}, per={n:[],p:[],s:[]}; let unSub=0, unItems=0;
+  for(const it of ITEMS){
+    const {out,un}=shares(it);
+    for(const id of IDS){ sub[id]+=out[id]; if(out[id]>1e-6) per[id].push([it,out[id]]); }
+    if(un>1e-6){ unSub+=un; unItems++; }
+  }
+  const ext={}; let unExt=0;
+  if(state.extras==='equal'){ for(const id of IDS) ext[id]=EXTRAS/3; }
+  else{ for(const id of IDS) ext[id]=EXTRAS*sub[id]/SUBTOTAL; unExt=EXTRAS*unSub/SUBTOTAL; }
+  const raw={}; for(const id of IDS) raw[id]=sub[id]+ext[id];
+  const complete=unSub+unExt<0.5, fin={};
+  if(complete){
+    let fs=0; const rem=[];
+    for(const id of IDS){ fin[id]=Math.floor(raw[id]+1e-9); fs+=fin[id]; rem.push([id,raw[id]-fin[id]]); }
+    rem.sort((a,b)=>b[1]-a[1]);
+    for(let i=0;i<TOTAL-fs;i++) fin[rem[i%3][0]]++;
+  }else{ for(const id of IDS) fin[id]=Math.round(raw[id]); }
+  const assigned=IDS.reduce((a,id)=>a+fin[id],0);
+  return {sub,ext,fin,per,unItems,unTotal:TOTAL-assigned,complete};
+}
+
+/* ---------- rendering ---------- */
+function rowInner(it){
+  const a=state.assign[it.id], {un}=shares(it);
+  let ctrl='', each='';
+  if(a.mode==='count'){
+    const used=IDS.reduce((s,id)=>s+(a.counts[id]||0),0);
+    ctrl=PEOPLE.map(p=>{
+      const c=a.counts[p.id]||0;
+      return `<span class="step" data-p="${p.id}"><span class="w" aria-hidden="true">${p.name[0]}</span>`+
+        `<button type="button" data-act="dec" data-item="${it.id}" data-person="${p.id}" aria-label="One less for ${p.name}"${c===0?' disabled':''}>−</button>`+
+        `<span class="c" aria-label="${p.name}: ${c}">${c}</span>`+
+        `<button type="button" data-act="inc" data-item="${it.id}" data-person="${p.id}" aria-label="One more for ${p.name}"${used>=it.qty?' disabled':''}>+</button></span>`;
+    }).join('')+`<span class="used${used<it.qty?' warn':''}">${used}/${it.qty}</span>`+
+    `<button type="button" class="modebtn" data-act="mode" data-item="${it.id}">Split evenly</button>`;
+    each= un>1e-6 ? `<span class="warn">${fmt(un)} left</span>` : `${fmt(it.price/it.qty)} each`;
+  }else{
+    ctrl=PEOPLE.map(p=>`<button type="button" class="chip" data-p="${p.id}" data-act="toggle" data-item="${it.id}" data-person="${p.id}" aria-pressed="${a.who.includes(p.id)}">${p.name}</button>`).join('')+
+      (it.qty>1?`<button type="button" class="modebtn" data-act="mode" data-item="${it.id}">By count</button>`:'');
+    if(a.who.length===0) each='<span class="warn">No one yet</span>';
+    else if(a.who.length===1) each=`${NAME[a.who[0]]} only`;
+    else each=`${fmt(it.price/a.who.length)} × ${a.who.length}`;
+  }
+  return `<div class="name"><div class="t">${it.name}${it.qty>1?`<span class="q">×${it.qty}</span>`:''}</div><div class="m">${it.m}</div></div>`+
+    `<div class="ctrl">${ctrl}</div>`+
+    `<div class="price"><div class="a">${fmt(it.price)}</div><div class="e">${each}</div></div>`;
+}
+
+const groupsEl=document.getElementById('groups');
+function buildGroups(){
+  groupsEl.innerHTML='';
+  for(const [cat,label] of CATS){
+    const its=ITEMS.filter(i=>i.cat===cat);
+    const sec=document.createElement('section'); sec.className='group';
+    sec.innerHTML=`<h2><span>${label}</span><span class="num">${fmt(its.reduce((a,i)=>a+i.price,0))}</span></h2>`;
+    const list=document.createElement('div'); list.className='list';
+    for(const it of its){
+      const r=document.createElement('div'); r.className='row'; r.id='row-'+it.id;
+      r.innerHTML=rowInner(it); r.classList.toggle('un',shares(it).un>1e-6);
+      list.appendChild(r);
+    }
+    sec.appendChild(list); groupsEl.appendChild(sec);
+  }
+}
+function updateRow(id,focusAct,focusPerson){
+  const r=document.getElementById('row-'+id), it=BYID[id];
+  r.innerHTML=rowInner(it); r.classList.toggle('un',shares(it).un>1e-6);
+  if(focusAct){
+    let sel=`button[data-act="${focusAct}"]`+(focusPerson?`[data-person="${focusPerson}"]`:'');
+    let b=r.querySelector(sel);
+    if(!b||b.disabled) b=r.querySelector(focusAct==='mode'?'button[data-act="mode"]':`button[data-person="${focusPerson}"]:not(:disabled)`)||r.querySelector('button[data-act="mode"]');
+    if(b) b.focus();
+  }
+}
+
+const tilesEl=document.getElementById('tiles'), statusEl=document.getElementById('status'), oweEl=document.getElementById('owe');
+tilesEl.innerHTML=PEOPLE.map(p=>`<div class="tile" data-p="${p.id}"><div class="who">${p.name}</div><div class="tot" id="tot-${p.id}"></div><div class="cnt" id="cnt-${p.id}"></div></div>`).join('');
+document.getElementById('subLine').textContent=fmt(SUBTOTAL);
+
+const bdWrap=document.getElementById('bdWrap');
+bdWrap.innerHTML=PEOPLE.map(p=>`<details data-p="${p.id}"><summary>${p.name}<span class="num" id="bdt-${p.id}"></span></summary><ul class="bd" id="bd-${p.id}"></ul></details>`).join('');
+
+function updateSummary(){
+  const T=totals();
+  for(const p of PEOPLE){
+    document.getElementById('tot-'+p.id).textContent=fmt(T.fin[p.id]);
+    const n=T.per[p.id].length;
+    document.getElementById('cnt-'+p.id).textContent=`${n} item${n===1?'':'s'}${p.id===PAYER?' · paid':''}`;
+    document.getElementById('bdt-'+p.id).textContent=fmt(T.fin[p.id]);
+    const ul=document.getElementById('bd-'+p.id);
+    ul.innerHTML=T.per[p.id].map(([it,c])=>{
+      const a=state.assign[it.id];
+      let how='';
+      if(a.mode==='count') how=` <span class="x">(${a.counts[p.id]} of ${it.qty})</span>`;
+      else if(a.who.length>1) how=` <span class="x">(1/${a.who.length})</span>`;
+      return `<li>${it.name}${how}</li><li class="num">${fmt(c)}</li>`;
+    }).join('')+`<li class="x">Fees and tax share</li><li class="num x">${fmt(T.ext[p.id])}</li>`;
+  }
+  if(T.complete){
+    statusEl.innerHTML=`<span class="ok">All 34 items assigned</span><span class="num">${fmt(TOTAL)} total</span>`;
+  }else{
+    statusEl.innerHTML=`<span class="warn">${T.unItems} item${T.unItems===1?'':'s'} need someone · <span class="num">${fmt(T.unTotal)}</span></span><span class="num">${fmt(TOTAL)} total</span>`;
+  }
+  oweEl.innerHTML=PEOPLE.filter(p=>p.id!==PAYER).map(p=>`<div class="l" data-p="${p.id}"><span><b>${p.name}</b> pays Pavan</span><span class="num">${fmt(T.fin[p.id])}</span></div>`).join('')+
+    `<p class="small">Pavan's own share is ${fmt(T.fin[PAYER])}.${T.complete?'':' Totals will move until every item has someone.'}</p>`;
+  document.getElementById('exProp').setAttribute('aria-pressed',state.extras==='prop');
+  document.getElementById('exEq').setAttribute('aria-pressed',state.extras==='equal');
+  document.getElementById('exNote').textContent= state.extras==='prop'
+    ? 'The net $1.68 (bag fee plus tax, minus savings) is spread by each person’s share of the items.'
+    : 'The net $1.68 (bag fee plus tax, minus savings) is split $0.56 each.';
+}
+
+groupsEl.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]'); if(!b||b.disabled) return;
+  const id=b.dataset.item, pid=b.dataset.person, a=state.assign[id], it=BYID[id];
+  const act=b.dataset.act;
+  if(act==='toggle'){
+    a.who=a.who.includes(pid)?a.who.filter(x=>x!==pid):IDS.filter(x=>x===pid||a.who.includes(x));
+  }else if(act==='mode'){
+    if(a.mode==='even'){
+      const who=a.who.length?a.who:IDS.slice(), c={n:0,p:0,s:0};
+      const base=Math.floor(it.qty/who.length); let r=it.qty-base*who.length;
+      for(const w of who){ c[w]=base+(r>0?1:0); if(r>0) r--; }
+      a.counts=c; a.mode='count';
+    }else{
+      a.who=IDS.filter(x=>(a.counts[x]||0)>0); a.mode='even';
+    }
+  }else if(act==='inc'){
+    const used=IDS.reduce((s,x)=>s+(a.counts[x]||0),0);
+    if(used<it.qty) a.counts[pid]=(a.counts[pid]||0)+1;
+  }else if(act==='dec'){
+    if((a.counts[pid]||0)>0) a.counts[pid]--;
+  }
+  save(); updateRow(id,act,pid); updateSummary();
+});
+
+document.querySelector('.seg').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-ex]'); if(!b) return;
+  state.extras=b.dataset.ex; save(); updateSummary();
+});
+
+function summaryText(){
+  const T=totals();
+  const pad=s=>s+' '.repeat(Math.max(1,9-s.length));
+  let t=`Walmart, Nov 2 (${fmt(TOTAL)}, Pavan paid)\n`;
+  for(const p of PEOPLE) t+=`${pad(p.name)}${fmt(T.fin[p.id])}\n`;
+  t+='\n';
+  for(const p of PEOPLE) if(p.id!==PAYER) t+=`${p.name} → Pavan: ${fmt(T.fin[p.id])}\n`;
+  if(!T.complete) t+=`\n(${T.unItems} item${T.unItems===1?'':'s'} still unassigned, ${fmt(T.unTotal)})\n`;
+  return t.trim();
+}
+const copyBtn=document.getElementById('copyBtn'), fb=document.getElementById('copyFallback');
+copyBtn.addEventListener('click',()=>{
+  const text=summaryText();
+  const fallback=()=>{ fb.hidden=false; fb.value=text; fb.focus(); fb.select(); copyBtn.textContent='Select and copy below'; };
+  try{
+    navigator.clipboard.writeText(text).then(()=>{ fb.hidden=true; copyBtn.textContent='Copied'; setTimeout(()=>copyBtn.textContent='Copy summary',1600); },fallback);
+  }catch(e){ fallback(); }
+});
+
+const resetBtn=document.getElementById('resetBtn'); let armTimer=null;
+resetBtn.addEventListener('click',()=>{
+  if(!resetBtn.classList.contains('armed')){
+    resetBtn.classList.add('armed'); resetBtn.textContent='Tap again to reset';
+    armTimer=setTimeout(()=>{ resetBtn.classList.remove('armed'); resetBtn.textContent='Reset to all shared'; },3000);
+    return;
+  }
+  clearTimeout(armTimer); resetBtn.classList.remove('armed'); resetBtn.textContent='Reset to all shared';
+  state=defaults(); save(); buildGroups(); updateSummary();
+});
+
+buildGroups(); updateSummary();
+</script>

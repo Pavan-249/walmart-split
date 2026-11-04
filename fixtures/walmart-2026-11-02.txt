@@ -1,0 +1,47 @@
+1	1102.1	Invoice
+1	1065.3	Nov 02, 2026 order
+1	1047.3	Order# 1234567-89012345
+1	916.1	Roxy, Organic, Free Range, Fresh Boneless Skinless Chicken Thighs, 1.00-2.20 lbs. Tray	1 substituted	Qty 1	$7.97
+1	895.1	Ivory Body Wash, Mild Gentle, Lavender Scent, for All Skin Types, 35 fl oz	52 shopped	Qty 1	$6.97
+1	874.1	Blue Dragon Spring Roll Wrappers, 4.7 oz	52 shopped	Qty 1	$2.97
+1	853.1	Great Value Cut Okra, 12 oz (Frozen)	52 shopped	Qty 1	$1.72
+1	832.1	Great Value Whole Kernel Corn, 12 oz Steamable Bag (Frozen)	52 shopped	Qty 2	$1.96
+1	811.1	Great Value Cage-Free Large White Eggs, 36 Count	52 shopped	Qty 1	$4.92
+1	790.1	Great Value Sliced Bananas, 16 oz Bag	52 shopped	Qty 1	$2.47
+1	769.1	Great Value Frozen California Style Vegetable Mix, 12 oz (Frozen)	52 shopped	Qty 6	$6.96
+1	748.1	Equate 100% Pure Cotton Swabs, 300 Count	52 shopped	Qty 1	$0.98
+1	727.1	Great Value Garlic Powder, 3.4 oz	52 shopped	Qty 1	$1.00
+1	706.1	Great Value Ground Ginger, 1.5 oz	52 shopped	Qty 1	$2.32
+1	685.1	Toilet Paper, 4 Rolls, 150 2-Ply Sheets per Roll	52 shopped	Qty 2	$1.88
+1	664.1	Great Value Toasted Corn Flakes Breakfast Cereal, 18 oz	52 shopped	Qty 1	$2.28
+1	643.1	Bibigo Korean-Style Hot & Sweet Gochujang Sauce, 12.16 oz	52 shopped	Qty 1	$4.13
+1	622.1	Franz Premium Everything Bagels, 18 oz, 6 Count	52 shopped	Qty 2	$5.96
+1	601.1	Great Value 100% Whole Wheat Round Top Bread, 20 oz	52 shopped	Qty 1	$2.02
+1	580.1	Great Value 4% Milkfat Minimum Small Curd Cottage Cheese, 24 oz	52 shopped	Qty 1	$2.97
+1	559.1	Grill Mates Seasoning, Hamburger, 2.75 oz Bottle	52 shopped	Qty 1	$1.97
+1	538.1	Great Value Cilantro Leaves, 0.5 oz	52 shopped	Qty 1	$2.12
+1	517.1	FESTIVE Ground Turkey, Frozen, 1 lb Roll	52 shopped	Qty 3	$5.94
+1	496.1	Great Value Complete Pancake & Waffle Mix, Buttermilk, 32 oz	52 shopped	Qty 1	$2.08
+1	475.1	Great Value Mild Black Bean & Corn Salsa, 16 oz	52 shopped	Qty 3	$8.04
+1	454.1	Great Value Greek Plain Nonfat Yogurt, 32 oz Tub	52 shopped	Qty 6	$19.68
+1	433.1	Great Value Original Cooking Spray, 8 oz	52 shopped	Qty 1	$2.57
+1	412.1	Shan Ginger & Garlic Natural Paste, 310 grams	52 shopped	Qty 1	$3.92
+1	391.1	Fresh Whole Green Cilantro Bunch, 1 Bunch, Fresh Produce	52 shopped	Qty 1	$0.97
+1	370.1	Yellow Potatoes Whole Fresh, 3lb Bag	52 shopped	Qty 1	$2.64
+1	349.1	Fresh Thai Chile Peppers, 4 oz	52 shopped	Qty 1	$2.98
+1	328.1	Fresh Slicing Tomato, 3 Pack	52 shopped	Qty 1	$1.97
+1	307.1	Fresh Gala Apples, 3 lb Bag	52 shopped	Qty 2	$4.76
+1	286.1	Freshness Guaranteed Boneless, Skinless Chicken Breasts, 3.0 - 7.3 lb Tray	52 shopped	Qty 1	$13.57
+1	265.1	Fresh Navel Orange, Each	52 shopped	Qty 4	$3.92
+1	244.1	Fresh Banana, Each	23 weight adjusted	Qty 22	$2.14
+1	223.1	Marketside Fresh Organic Bananas, Bunch	23 weight adjusted	Qty 1	$1.64
+1	181.1	Subtotal	$140.39
+1	159.3	Savings	-$0.63
+1	130.8	$139.76
+1	89.6	Free delivery from store	$9.95 $0
+1	62.6	Bag fee	$1.28
+2	1159.1	Taxes	$1.03
+2	1119.3	Driver tip	$0.00
+2	1105.8	(charged separately after delivery)
+2	1060.8	Total	$142.07
+2	1014.3	Order# 1234567-89012345
